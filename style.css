@@ -230,4 +230,51 @@ main{position:relative;width:100%;overflow:hidden;background:rgba(253,242,248,.3
 .bar{height:4px;background:rgba(0,0,0,.08);border-radius:9px;overflow:hidden}
 #barFill{height:100%;width:0;background:var(--p300);border-radius:9px}
 
+/* voice message section */
+.voice-sec{padding:8rem 1.5rem;min-height:70vh;background:rgba(255,255,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.voice-sec .small-caps{margin-bottom:3rem}
+.voice-card{display:flex;align-items:center;gap:16px;width:100%;max-width:26rem;padding:18px 20px;border-radius:2rem;
+  background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(252,231,243,.85));backdrop-filter:blur(16px);
+  border:1px solid var(--p200);box-shadow:0 20px 50px rgba(236,72,153,.2);transition:transform .4s,box-shadow .4s}
+.voice-card:hover{transform:translateY(-4px);box-shadow:0 25px 60px rgba(236,72,153,.3)}
+.voice-play{flex:none;width:56px;height:56px;border-radius:50%;background:var(--p500);color:#fff;font-size:20px;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 0 rgba(236,72,153,.5);animation:ring 2s infinite;transition:transform .2s}
+.voice-play:hover{transform:scale(1.08);background:var(--p600)}
+@keyframes ring{70%{box-shadow:0 0 0 16px rgba(236,72,153,0)}100%{box-shadow:0 0 0 0 rgba(236,72,153,0)}}
+.voice-mid{flex:1;min-width:0;direction:ltr}
+.wave{display:flex;align-items:center;gap:3px;height:40px}
+.wave i{flex:1;min-width:2px;border-radius:9px;background:var(--p200);transition:background .2s}
+.wave i.played{background:var(--p500)}
+.voice-meta{display:flex;justify-content:space-between;margin-top:6px;font-size:.75rem;font-weight:700;color:var(--p600)}
+#voiceTime{font-family:monospace}
+
+/* stage: black screen + fireworks */
+#stage{position:fixed;inset:0;z-index:200;background:#000;opacity:0;transition:opacity 2.5s ease;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;text-align:center;--lv:0}
+#stage.on{opacity:1}
+#fxCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+#stars{position:absolute;inset:0;z-index:1;pointer-events:none}
+#stars i{position:absolute;border-radius:50%;background:#fff;animation:twinkle 3s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(.6)}50%{opacity:.9;transform:scale(1.2)}}
+.stage-center{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;padding:0 20px;pointer-events:none;
+  opacity:0;transition:opacity 2s 1.2s}
+#stage.on .stage-center{opacity:1}
+.st-heart{font-size:clamp(5rem,18vw,9rem);color:var(--p500);line-height:1;
+  transform:scale(calc(1 + var(--lv)*.35));transition:transform .08s linear;
+  text-shadow:0 0 30px rgba(236,72,153,.9),0 0 80px rgba(236,72,153,.6);animation:hb 1.6s ease-in-out infinite}
+@keyframes hb{50%{filter:brightness(1.4)}}
+.eq{display:flex;gap:6px;align-items:flex-end;height:36px;margin:28px 0 18px}
+.eq i{width:6px;border-radius:9px;background:var(--p300);animation:eq 1s ease-in-out infinite}
+.eq i:nth-child(1){animation-delay:-.2s}.eq i:nth-child(2){animation-delay:-.5s}.eq i:nth-child(3){animation-delay:-.8s}
+.eq i:nth-child(4){animation-delay:-.35s}.eq i:nth-child(5){animation-delay:-.65s}
+@keyframes eq{0%,100%{height:8px}50%{height:36px}}
+.st-title{font-family:'Playfair Display',Almarai,serif;font-size:clamp(1.4rem,4vw,2rem);color:var(--p200);text-shadow:0 0 20px rgba(244,114,182,.7)}
+.st-time{margin-top:6px;font-family:monospace;color:var(--p300);font-size:.9rem}
+.st-bar{width:min(260px,70vw);height:3px;background:rgba(255,255,255,.15);border-radius:9px;margin-top:14px;overflow:hidden}
+#stFill{height:100%;width:0;background:var(--p400);box-shadow:0 0 10px var(--p400)}
+.stage-close{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;z-index:5;width:40px;height:40px;border-radius:50%;
+  color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.2);font-size:16px;opacity:0;transition:opacity 2s 2s,color .2s}
+#stage.on .stage-close{opacity:1}
+.stage-close:hover{color:#fff}
+
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
