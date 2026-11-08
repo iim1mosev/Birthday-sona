@@ -1,7 +1,7 @@
 /* ============ DATA — عدّل هنا ============ */
 const DATA = {
   name: "SONA",
-  birthday: "NOVEMBER 11",
+  birthday: "NOVEMBER 10",
   pin: "1011",
   memories: [
     { image: "1.JPG", date: "اول خروجه لينا سوا", caption: "كنت فرحان اوي اليوم . مكنتش عايز اروح وله عايز اليوم يخلص , كنت عايز افضل معاكي طول اليوم ❤" },
@@ -22,7 +22,8 @@ const DATA = {
   letter: `حبيت اكون اول حد يقولك كل سنه وانتي طيبه يحسونتي . اتمني ان السنه دي تعدي وتكوني مبسوطه فيها ومفيش حاجه مزعلاكي حبيت اقولك اني بحبك ايوه يحسناء لسه بحبك بعد الي حصل كلو لسه في قلبي مشاعر ليكي ومهما العمر يعدي هتفضلي دايما في قلبي يحسناء وهتفضلي دايما ع بالي . يمكن مش هتعرفي تصدقيني بعد الي حصل ده بس بجد يحسناء انا لسه بحبك وهفضل اقول كده طول عمري يحسناء . انا بحبك يحسناء يبنت هاشم
 
 كل سنه وانتي طيبه يحته من قلبي 🎊💓`,
-  song: { title: "ولا عاش ولا كان - توليت", src: "song.mp3" }
+  song: { title: "ولا عاش ولا كان - توليت", src: "song.mp3" },
+  voice: { src: "song2.mp3", duck: 0.12 }   // duck = صوت الاغنيه الاساسيه وقت الريكورد (0 الى 1)
 };
 
 /* ============ helpers ============ */
@@ -139,7 +140,7 @@ function startMain() {
   mainStarted = true;
   show($("#main"));
   document.body.classList.remove("locked");
-  initHero(); buildStory(); buildReasons(); initLetter();
+  initHero(); buildStory(); buildReasons(); initLetter(); initVoice();
 }
 
 /* floating hearts + particle heart */
@@ -304,4 +305,168 @@ function startFinal() {
     h.style.cssText = `left:${rand(0,100)}%;font-size:${rand(10,40)}px;animation-duration:${rand(4,12)}s;animation-delay:${rand(3,7)}s;color:${i % 3 ? "#fbcfe8" : "#f472b6"}`;
     box.appendChild(h);
   }
+}
+
+/* ============ voice message + black stage + fireworks ============ */
+function initVoice() {
+  if (initVoice.done) return; initVoice.done = true;
+
+  const vo = new Audio(DATA.voice.src);
+  vo.preload = "auto";
+  const stage = $("#stage"), btn = $("#voiceBtn"), wave = $("#voiceWave");
+  const cv = $("#fxCanvas"), ctx = cv.getContext("2d");
+  let playing = false, wasPlaying = false, raf = 0, fadeT = 0, W = 0, H = 0;
+
+  /* waveform bars (WhatsApp style) */
+  const BARS = 38;
+  for (let i = 0; i < BARS; i++) {
+    const b = document.createElement("i");
+    b.style.height = (20 + Math.abs(Math.sin(i * .7) * 55) + rand(0, 25)) + "%";
+    wave.appendChild(b);
+  }
+  const bars = [...wave.children];
+
+  /* stars */
+  const stars = $("#stars");
+  for (let i = 0; i < 70; i++) {
+    const s = document.createElement("i"), sz = rand(1, 3);
+    s.style.cssText = `left:${rand(0,100)}%;top:${rand(0,100)}%;width:${sz}px;height:${sz}px;animation-delay:${rand(-3,0)}s;animation-duration:${rand(2,5)}s`;
+    stars.appendChild(s);
+  }
+
+  /* progress / time */
+  vo.addEventListener("loadedmetadata", () => $("#voiceTime").textContent = fmt(vo.duration));
+  vo.addEventListener("timeupdate", () => {
+    const p = vo.currentTime / (vo.duration || 1);
+    $("#voiceTime").textContent = fmt(vo.currentTime);
+    $("#stTime").textContent = fmt(vo.currentTime) + " / " + fmt(vo.duration);
+    $("#stFill").style.width = p * 100 + "%";
+    const n = Math.round(p * BARS);
+    bars.forEach((b, i) => b.classList.toggle("played", i < n));
+  });
+  vo.addEventListener("error", () => { $("#voiceLabel").textContent = "ملف " + DATA.voice.src + " مش موجود"; stop(true); });
+  vo.addEventListener("ended", () => stop());
+
+  /* fade volume of main song (never fully silent) */
+  function fadeVol(to, ms) {
+    clearInterval(fadeT);
+    const from = audio.volume, t0 = performance.now();
+    fadeT = setInterval(() => {
+      const k = Math.min(1, (performance.now() - t0) / ms);
+      audio.volume = from + (to - from) * k;
+      if (k === 1) clearInterval(fadeT);
+    }, 40);
+  }
+
+  /* analyser: fireworks react to her voice (works on http/https only) */
+  let ac, an, fd;
+  function setupAnalyser() {
+    if (ac || !/^https?:/.test(location.protocol)) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      ac = new AC();
+      const src = ac.createMediaElementSource(vo);
+      an = ac.createAnalyser(); an.fftSize = 256;
+      src.connect(an); an.connect(ac.destination);
+      fd = new Uint8Array(an.frequencyBinCount);
+    } catch (e) { an = null; }
+  }
+  function level() {
+    if (!an) return 0;
+    an.getByteFrequencyData(fd);
+    let s = 0; for (let i = 0; i < 40; i++) s += fd[i];
+    return s / 40 / 255;
+  }
+
+  /* fireworks */
+  const rockets = [], sparks = [];
+  const pal = ["#fbcfe8", "#f9a8d4", "#f472b6", "#ec4899", "#fde047", "#ffffff", "#fb923c"];
+  function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+  addEventListener("resize", () => playing && resize());
+
+  function launch(big) {
+    rockets.push({ x: rand(W * .15, W * .85), y: H + 10, vy: -rand(H * .016, H * .022), ty: rand(H * .12, H * .5), c: pal[Math.floor(rand(0, pal.length))], big });
+  }
+  function burst(x, y, c, big) {
+    const heart = Math.random() < .35, n = heart ? 70 : (big ? 110 : 70), sc = rand(.35, .55) * Math.min(W, H) / 40;
+    for (let i = 0; i < n; i++) {
+      let vx, vy;
+      if (heart) {
+        const t = (i / n) * Math.PI * 2;
+        vx = 16 * Math.pow(Math.sin(t), 3) * sc * .06;
+        vy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * sc * .06;
+      } else {
+        const a = rand(0, Math.PI * 2), sp = rand(1, big ? 7 : 5.5);
+        vx = Math.cos(a) * sp; vy = Math.sin(a) * sp;
+      }
+      sparks.push({ x, y, vx, vy, life: 1, d: rand(.008, .018), c: heart ? "#f472b6" : (Math.random() < .3 ? "#fff" : c), s: rand(1.5, 3) });
+    }
+  }
+
+  let lastLaunch = 0, nextAuto = 0;
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    const lv = level();
+    stage.style.setProperty("--lv", an ? Math.min(1, lv * 1.6).toFixed(3) : 0);
+
+    /* launch: on voice peaks if analyser works, otherwise on a timer */
+    if (an) {
+      if (lv > .22 && now - lastLaunch > 380) { lastLaunch = now; launch(lv > .38); if (lv > .4) launch(true); }
+    }
+    if (now > nextAuto) { nextAuto = now + rand(900, 1800); if (!an || lv < .15) launch(false); }
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "lighter";
+
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.y += r.vy; r.vy *= .985;
+      ctx.fillStyle = r.c; ctx.beginPath(); ctx.arc(r.x, r.y, 2.2, 0, 7); ctx.fill();
+      if (r.y <= r.ty || r.vy > -1.2) { burst(r.x, r.y, r.c, r.big); rockets.splice(i, 1); }
+    }
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const p = sparks[i];
+      p.x += p.vx; p.y += p.vy; p.vx *= .985; p.vy = p.vy * .985 + .04; p.life -= p.d;
+      if (p.life <= 0) { sparks.splice(i, 1); continue; }
+      ctx.globalAlpha = p.life; ctx.fillStyle = p.c;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.s * p.life + .3, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* start / stop */
+  function start() {
+    if (playing) return;
+    playing = true;
+    setupAnalyser();
+    if (ac && ac.state === "suspended") ac.resume();
+    wasPlaying = !audio.paused;
+    if (wasPlaying) fadeVol(DATA.voice.duck, 1500);     // اغنيه واطيه بس باينه
+    show(stage); resize();
+    ctx.clearRect(0, 0, W, H);
+    void stage.offsetWidth; stage.classList.add("on");  // الشاشه تسود تدريجي
+    document.body.classList.add("locked");
+    vo.currentTime = 0;
+    vo.play().catch(e => { console.error(e); stop(true); });
+    btn.textContent = "❚❚";
+    cancelAnimationFrame(raf); nextAuto = performance.now() + 2500;
+    raf = requestAnimationFrame(frame);
+  }
+  function stop(quick) {
+    if (!playing) return;
+    playing = false;
+    vo.pause();
+    stage.classList.remove("on");                       // كل حاجه ترجع زي م كانت
+    if (wasPlaying) fadeVol(1, 2000); else audio.volume = 1;
+    btn.textContent = "▶";
+    setTimeout(() => {
+      cancelAnimationFrame(raf); rockets.length = sparks.length = 0;
+      hide(stage);
+      if ($("#final").classList.contains("hidden")) document.body.classList.remove("locked");
+    }, quick ? 100 : 2600);
+  }
+
+  btn.onclick = () => playing ? stop() : start();
+  $("#stageClose").onclick = () => stop();
 }
