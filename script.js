@@ -1,8 +1,18 @@
 /* ============ DATA — عدّل هنا ============ */
 const DATA = {
   name: "SONA",
-  birthday: "NOVEMBER 10",
+  birthday: "NOVEMBER 11",
+  relationshipStart: { year: 2025, month: 11, day: 5 },
   pin: "1011",
+  places: [   // x,y = مكان القلب على الخريطه (0-100) | image = اسم الصوره
+    { x: 20, y: 14, image: "institute.jpg",  title: "المعهد",         date: "احلي سونا 💕",      caption: "كنتي عماله تزغطينيي كتير" },
+    { x: 68, y: 22, image: "mallmasr.jpg",   title: "مول مصر",        date: "تالت مره نروح سوا",       caption: "كنت مروح اليوم ده فرحان اويي" },
+    { x: 30, y: 40, image: "azhar.jpg",      title: "حديقه الازهر",   date: "احلي يوم في حياتي كلها",           caption: "كنت حاسس اني مبسوط ومسترحيلك اويي" },
+    { x: 74, y: 48, image: "iftar.jpg",      title: "فطار رمضان",     date: "كنت حاسس ساعتها بحنيتك عليا",          caption: "همك كلو انك تأكليني.." },
+    { x: 22, y: 62, image: "cityscape.jpg",  title: "سيتي اسكيب",     date: "كنا اول مره نروحو سوا ",        caption: "❤❤❤❤" },
+    { x: 64, y: 72, image: "hosary.jpg",     title: "الحصري",         date: "اول مره انزل معاكي",   caption: "كل مكان معاكي بيبقى احلى." },
+    { x: 38, y: 88, image: "crinkle.jpg",    title: "كرينكل",    date: "روحنا كتير سواا",         caption: "مكناش بنزهق خالص واحنا هناك" }
+  ],
   memories: [
     { image: "1.JPG", date: "اول خروجه لينا سوا", caption: "كنت فرحان اوي اليوم . مكنتش عايز اروح وله عايز اليوم يخلص , كنت عايز افضل معاكي طول اليوم ❤" },
     { image: "2.JPG", date: "كانت اول مره نخرج انا وانتي لوحدينا 😍", caption: "انا فاكر ان اليوم ده كان حلو اوي من اولو لحد اخرو . كان اول مره اروح مول مصر مع بنت او مع حد عموما , كنت حاسس نفسي مالك الدنيا و الي فيها " },
@@ -22,8 +32,8 @@ const DATA = {
   letter: `حبيت اكون اول حد يقولك كل سنه وانتي طيبه يحسونتي . اتمني ان السنه دي تعدي وتكوني مبسوطه فيها ومفيش حاجه مزعلاكي حبيت اقولك اني بحبك ايوه يحسناء لسه بحبك بعد الي حصل كلو لسه في قلبي مشاعر ليكي ومهما العمر يعدي هتفضلي دايما في قلبي يحسناء وهتفضلي دايما ع بالي . يمكن مش هتعرفي تصدقيني بعد الي حصل ده بس بجد يحسناء انا لسه بحبك وهفضل اقول كده طول عمري يحسناء . انا بحبك يحسناء يبنت هاشم
 
 كل سنه وانتي طيبه يحته من قلبي 🎊💓`,
-  song: { title: "ولا عاش ولا كان - توليت", src: "song.mp3" },
-  voice: { src: "song2.mp3", duck: 0.12 }   // duck = صوت الاغنيه الاساسيه وقت الريكورد (0 الى 1)
+  song: { title: "Kol Sana - Mahmoud El-Esseily", src: "song.mp3" },
+  voice: { src: "sound.mp3", duck: 0.12 }   // اخفض صوت الاغنيه اثناء التسجيل (0 الى 1)
 };
 
 /* ============ helpers ============ */
@@ -34,7 +44,7 @@ const hide = el => el.classList.add("hidden");
 
 document.querySelectorAll(".nameSlot").forEach(e => e.textContent = DATA.name);
 $("#finalDate").textContent = DATA.birthday;
-$("#entrySub").textContent = "For " + DATA.name;
+$("#entrySub").textContent = "رسالة صغيرة ليكي يا " + DATA.name;
 $("#songTitle").textContent = DATA.song.title;
 
 /* ============ custom heart cursor ============ */
@@ -67,9 +77,14 @@ audio.addEventListener("timeupdate", () => {
   $("#barFill").style.width = (audio.currentTime / (audio.duration || 1)) * 100 + "%";
 });
 const setPlayIcon = () => playBtn.textContent = audio.paused ? "▶" : "❚❚";
-audio.addEventListener("play", setPlayIcon);
-audio.addEventListener("pause", setPlayIcon);
-$("#player").addEventListener("click", () => {
+const syncPlayButton = () => {
+  setPlayIcon();
+  playBtn.setAttribute("aria-pressed", String(!audio.paused));
+  playBtn.setAttribute("aria-label", audio.paused ? "تشغيل الأغنية" : "إيقاف الأغنية مؤقتًا");
+};
+audio.addEventListener("play", syncPlayButton);
+audio.addEventListener("pause", syncPlayButton);
+playBtn.addEventListener("click", () => {
   audio.paused ? audio.play().catch(console.error) : audio.pause();
 });
 
@@ -81,12 +96,15 @@ const renderPin = () => dots.forEach((d, i) => {
   d.classList.toggle("empty", !pin[i]);
 });
 renderPin();
+$("#pinDots").setAttribute("aria-live", "polite");
+$("#pinDots").setAttribute("aria-label", "الرمز السري: أربع خانات");
 
 const keypad = $("#keypad");
 [1,2,3,4,5,6,7,8,9,"",0,"DEL"].forEach(k => {
   if (k === "") return keypad.appendChild(document.createElement("div"));
   const b = document.createElement("button");
-  b.textContent = k;
+  b.textContent = k === "DEL" ? "⌫" : k;
+  b.setAttribute("aria-label", k === "DEL" ? "مسح آخر رقم" : "رقم " + k);
   if (k === "DEL") b.className = "del";
   b.onclick = () => k === "DEL" ? del() : press(String(k));
   keypad.appendChild(b);
@@ -105,19 +123,22 @@ function press(d) {
   if (pin === DATA.pin) {
     busy = true;
     $("#entryTitle").textContent = "اشطر سونا في الدنيا كلهااا";
-    $("#entrySub").textContent = "Unlocked";
+    $("#entrySub").textContent = "استعدي للي جاي بقا";
+    $("#pinFeedback").textContent = "❤";
     show($("#unlockedCover"));
     audio.play().catch(console.error);
     show($("#player"));
     setTimeout(startIntro, 2000);
   } else {
     const box = $("#pinDots");
+    $("#pinFeedback").textContent = "غلط يبت - ركزي ";
     box.classList.add("shake");
     setTimeout(() => { box.classList.remove("shake"); pin = ""; renderPin(); }, 500);
   }
 }
 
 /* ============ 2) intro ============ */
+let introTimer = 0, introFinished = false;
 function startIntro() {
   const entry = $("#entry");
   entry.classList.add("fade");
@@ -126,12 +147,18 @@ function startIntro() {
   show(intro);
   $("#introLine1").classList.add("go");
   $("#introLine2").classList.add("go");
-  setTimeout(() => {
-    intro.style.opacity = 0;
-    startMain();
-    setTimeout(() => hide(intro), 2000);
-  }, 7000);
+  introTimer = setTimeout(finishIntro, 7000);
 }
+function finishIntro() {
+  if (introFinished) return;
+  introFinished = true;
+  clearTimeout(introTimer);
+  const intro = $("#intro");
+  intro.style.opacity = 0;
+  startMain();
+  setTimeout(() => hide(intro), 1600);
+}
+$("#skipIntro").addEventListener("click", finishIntro);
 
 /* ============ 3) main page ============ */
 let mainStarted = false;
@@ -140,72 +167,55 @@ function startMain() {
   mainStarted = true;
   show($("#main"));
   document.body.classList.remove("locked");
-  initHero(); buildStory(); buildReasons(); initLetter(); initVoice();
+  initHero(); buildStory(); buildReasons(); initLetter(); initVoice(); initMap();
+  initCountdown();
+  updateScrollDecor();
 }
 
-/* floating hearts + particle heart */
+/* relationship elapsed counter and reading progress */
+function initCountdown() {
+  const fields = {
+    days: $("#countDays"), hours: $("#countHours"),
+    minutes: $("#countMinutes"), seconds: $("#countSeconds")
+  };
+  const pad = value => String(value).padStart(2, "0");
+  const start = new Date(DATA.relationshipStart.year, DATA.relationshipStart.month - 1, DATA.relationshipStart.day);
+  $("#birthdayCountdown").setAttribute("aria-label", "المدة منذ يوم ما عرفنا بعض");
+  const update = () => {
+    const now = new Date();
+    let elapsed = Math.max(0, now.getTime() - start.getTime());
+    const days = Math.floor(elapsed / 86400000); elapsed %= 86400000;
+    const hours = Math.floor(elapsed / 3600000); elapsed %= 3600000;
+    const minutes = Math.floor(elapsed / 60000); elapsed %= 60000;
+    const seconds = Math.floor(elapsed / 1000);
+    fields.days.textContent = pad(days);
+    fields.hours.textContent = pad(hours);
+    fields.minutes.textContent = pad(minutes);
+    fields.seconds.textContent = pad(seconds);
+    $("#countdownLabel").textContent = "من يوم ما عرفنا بعض 🤍";
+  };
+  update();
+  setInterval(update, 1000);
+}
+
+function updateScrollDecor() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const progress = max > 0 ? Math.min(100, Math.max(0, scrollY / max * 100)) : 0;
+  $("#scrollProgressFill").style.width = progress + "%";
+}
+addEventListener("scroll", updateScrollDecor, { passive: true });
+addEventListener("resize", updateScrollDecor, { passive: true });
+
+/* floating hearts */
 function initHero() {
   const fh = $("#floatHearts");
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 28; i++) {
     const h = document.createElement("i");
     h.textContent = "❤";
+    h.setAttribute("aria-hidden", "true");
     h.style.cssText = `left:${rand(0,100)}%;font-size:${rand(10,30)}px;animation-duration:${rand(10,20)}s;animation-delay:${rand(-20,0)}s`;
     fh.appendChild(h);
   }
-
-  const cv = $("#heartCanvas"), ctx = cv.getContext("2d", { willReadFrequently: true });
-  let W, H, parts = [], lastW = 0;
-  const mouse = { x: -1000, y: -1000, r: 100 };
-  const colors = ["#fbcfe8", "#f9a8d4", "#f472b6", "#ec4899", "#db2777"];
-
-  class P {
-    constructor(x, y, c) {
-      this.x = rand(0, W); this.y = rand(0, H);
-      this.bx = x; this.by = y; this.c = c;
-      this.size = rand(0, 3) + (W < 768 ? 2.5 : 2);
-      this.density = rand(1, 31);
-    }
-    draw() { ctx.fillStyle = this.c; ctx.fillRect(this.x, this.y, this.size, this.size); }
-    update() {
-      const dx = mouse.x - this.x, dy = mouse.y - this.y, d = Math.hypot(dx, dy);
-      if (d < mouse.r) {
-        const f = (mouse.r - d) / mouse.r;
-        this.x -= (dx / d) * f * this.density;
-        this.y -= (dy / d) * f * this.density;
-      } else {
-        this.x -= (this.x - this.bx) / 10;
-        this.y -= (this.y - this.by) / 10;
-      }
-    }
-  }
-
-  function build() {
-    W = cv.width = innerWidth; H = cv.height = innerHeight; lastW = innerWidth;
-    parts = []; ctx.clearRect(0, 0, W, H);
-    const mob = W < 768, s = Math.min(W, H) * (mob ? .35 : .3), cx = W / 2, cy = H * .5 - s * .2;
-    ctx.fillStyle = "#fff"; ctx.beginPath();
-    ctx.moveTo(cx, cy + s * .3);
-    ctx.bezierCurveTo(cx, cy - s * .2, cx - s, cy - s * .2, cx - s, cy + s * .3);
-    ctx.bezierCurveTo(cx - s, cy + s, cx, cy + s * 1.5, cx, cy + s * 2);
-    ctx.bezierCurveTo(cx, cy + s * 1.5, cx + s, cy + s, cx + s, cy + s * .3);
-    ctx.bezierCurveTo(cx + s, cy - s * .2, cx, cy - s * .2, cx, cy + s * .3);
-    ctx.fill();
-    const data = ctx.getImageData(0, 0, W, H).data;
-    ctx.clearRect(0, 0, W, H);
-    const step = Math.floor(W / (mob ? 35 : 55));
-    for (let y = 0; y < H; y += step)
-      for (let x = 0; x < W; x += step)
-        if (data[(y * W + x) * 4 + 3] > 128) parts.push(new P(x, y, colors[Math.floor(Math.random() * colors.length)]));
-  }
-  const loop = () => { ctx.clearRect(0, 0, W, H); parts.forEach(p => { p.draw(); p.update(); }); requestAnimationFrame(loop); };
-  const move = e => { const t = e.touches ? e.touches[0] : e; mouse.x = t.clientX; mouse.y = t.clientY; };
-  const leave = () => { mouse.x = mouse.y = -1000; };
-  addEventListener("resize", () => { if (innerWidth !== lastW) build(); });
-  addEventListener("mousemove", move);
-  addEventListener("touchmove", move, { passive: true });
-  addEventListener("mouseleave", leave);
-  addEventListener("touchend", leave);
-  build(); loop();
 }
 
 /* reveal on scroll */
@@ -216,18 +226,63 @@ const io = new IntersectionObserver(es => es.forEach(e => {
 /* story */
 function buildStory() {
   const box = $("#memories");
+  $("#memoryCount").textContent = String(DATA.memories.length).padStart(2, "0") + " لحظات مننا";
   DATA.memories.forEach((m, i) => {
     const isVideo = /\.mp4$/i.test(m.image);
     const el = document.createElement("div");
     el.className = "memory" + (i % 2 === 0 ? " even" : "");
-    el.innerHTML = `
-      <div class="media">${isVideo
-        ? `<video src="${m.image}" autoplay loop muted playsinline></video>`
-        : `<img src="${m.image}" alt="${m.date}" loading="lazy">`}</div>
-      <div class="m-text"><span class="m-date">${m.date}</span><h3 class="m-cap">${m.caption}</h3><div class="m-line"></div></div>`;
+    const media = document.createElement("button");
+    media.type = "button";
+    media.className = "media";
+    media.setAttribute("aria-label", "عرض الذكرى: " + m.date);
+    if (isVideo) {
+      const video = document.createElement("video");
+      video.src = m.image; video.poster = "gift.jpg"; video.preload = "metadata";
+      video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
+      video.setAttribute("aria-label", m.date);
+      video.addEventListener("loadeddata", () => video.play().catch(() => {}), { once: true });
+      media.appendChild(video);
+    } else {
+      const image = document.createElement("img");
+      image.src = m.image; image.alt = m.date; image.loading = "lazy"; image.decoding = "async";
+      media.appendChild(image);
+    }
+    media.addEventListener("click", () => openMemory(m, isVideo));
+    const text = document.createElement("div"); text.className = "m-text";
+    const date = document.createElement("span"); date.className = "m-date"; date.textContent = m.date;
+    const caption = document.createElement("h3"); caption.className = "m-cap"; caption.textContent = m.caption;
+    const line = document.createElement("div"); line.className = "m-line";
+    text.append(date, caption, line); el.append(media, text);
     box.appendChild(el); io.observe(el);
   });
 }
+
+function openMemory(m, isVideo) {
+  const dialog = $("#memoryDialog"), stage = $("#memoryDialogMedia");
+  stage.replaceChildren();
+  $("#memoryDialogCaption").textContent = m.date;
+  let media;
+  if (isVideo) {
+    media = document.createElement("video");
+    media.src = m.image; media.controls = true; media.autoplay = true; media.playsInline = true;
+    media.setAttribute("aria-label", m.date);
+  } else {
+    media = document.createElement("img");
+    media.src = m.image; media.alt = m.date;
+  }
+  stage.appendChild(media);
+  dialog.showModal();
+  if (isVideo) media.play().catch(() => {});
+}
+
+$("#memoryDialog").addEventListener("click", e => {
+  if (e.target === $("#memoryDialog")) $("#memoryDialog").close();
+});
+$("#memoryDialog").addEventListener("close", () => {
+  const video = $("#memoryDialogMedia video");
+  if (video) video.pause();
+  $("#memoryDialogMedia").replaceChildren();
+});
 
 /* scratch cards */
 function buildReasons() {
@@ -236,9 +291,14 @@ function buildReasons() {
     const el = document.createElement("div");
     el.className = "reason";
     el.style.transitionDelay = i * .1 + "s";
-    el.innerHTML = `<div class="back"><span class="num">${String(i + 1).padStart(2, "0")}</span><h3>${r.title}</h3><p>${r.description}</p></div><canvas></canvas>`;
+    const back = document.createElement("div"); back.className = "back"; back.setAttribute("aria-hidden", "true");
+    const num = document.createElement("span"); num.className = "num"; num.textContent = String(i + 1).padStart(2, "0");
+    const title = document.createElement("h3"); title.textContent = r.title;
+    const description = document.createElement("p"); description.textContent = r.description;
+    const cover = document.createElement("canvas");
+    back.append(num, title, description); el.append(back, cover);
     grid.appendChild(el); io.observe(el);
-    scratch(el.querySelector("canvas"));
+    scratch(cover);
   });
 }
 function scratch(cv) {
@@ -246,24 +306,36 @@ function scratch(cv) {
   const rect = cv.getBoundingClientRect();
   cv.width = rect.width * dpr; cv.height = rect.height * dpr; ctx.scale(dpr, dpr);
   ctx.fillStyle = "#fbcfe8"; ctx.fillRect(0, 0, rect.width, rect.height);
-  ctx.fillStyle = "#f9a8d4";
-  for (let i = 0; i < 500; i++) { ctx.beginPath(); ctx.arc(rand(0, rect.width), rand(0, rect.height), rand(0, 2), 0, 7); ctx.fill(); }
-  ctx.fillStyle = "#be185d"; ctx.font = "16px Almarai"; ctx.textAlign = "center";
-  ctx.fillText("Scratch Me", rect.width / 2, rect.height / 2);
+  const coverGradient = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+  coverGradient.addColorStop(0, "#d9b1ad"); coverGradient.addColorStop(1, "#b56d7c");
+  ctx.fillStyle = coverGradient; ctx.fillRect(0, 0, rect.width, rect.height);
+  ctx.fillStyle = "rgba(255,250,245,.22)";
+  for (let i = 0; i < 180; i++) { ctx.beginPath(); ctx.arc(rand(0, rect.width), rand(0, rect.height), rand(0, 1.8), 0, 7); ctx.fill(); }
+  ctx.fillStyle = "rgba(255,250,245,.95)"; ctx.font = "700 15px Almarai, sans-serif"; ctx.textAlign = "center";
+  ctx.fillText("خربشي هنا", rect.width / 2, rect.height / 2);
   ctx.globalCompositeOperation = "destination-out";
   let down = false, n = 0, done = false;
-  const pos = e => { const b = cv.getBoundingClientRect(), t = e.touches ? e.touches[0] : e; return [t.clientX - b.left, t.clientY - b.top]; };
+  cv.setAttribute("role", "button"); cv.setAttribute("tabindex", "0"); cv.setAttribute("aria-pressed", "false");
+  cv.setAttribute("aria-label", "خربشي لإظهار البطاقة");
+  const reveal = () => {
+    if (done) return;
+    done = true;
+    cv.classList.add("done");
+    cv.setAttribute("aria-pressed", "true");
+    cv.setAttribute("aria-label", "تم كشف البطاقة");
+    cv.previousElementSibling?.setAttribute("aria-hidden", "false");
+  };
+  const pos = e => { const b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
   const scr = e => {
     if (!down || done) return; e.preventDefault();
     const [x, y] = pos(e); ctx.beginPath(); ctx.arc(x, y, 25, 0, 7); ctx.fill();
-    if (++n > 150) { done = true; cv.classList.add("done"); }
+    if (++n > 100) reveal();
   };
-  const start = e => { down = true; scr(e); }, stop = () => down = false;
-  cv.addEventListener("mousedown", start); cv.addEventListener("mousemove", scr);
-  cv.addEventListener("mouseup", stop); cv.addEventListener("mouseleave", stop);
-  cv.addEventListener("touchstart", start, { passive: false });
-  cv.addEventListener("touchmove", scr, { passive: false });
-  cv.addEventListener("touchend", stop);
+  cv.addEventListener("pointerdown", e => { down = true; cv.setPointerCapture(e.pointerId); scr(e); });
+  cv.addEventListener("pointermove", scr);
+  cv.addEventListener("pointerup", () => down = false);
+  cv.addEventListener("pointercancel", () => down = false);
+  cv.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reveal(); } });
 }
 
 /* letter */
@@ -278,11 +350,11 @@ function initLetter() {
 }
 function typeLetter() {
   const el = $("#letterText"), text = DATA.letter;
-  const bar = '<span class="cursor-bar"></span>';
+  const bar = '<span class="cursor-bar" aria-hidden="true"></span>';
   let i = 0, done = false, timer;
   const finish = () => { done = true; clearTimeout(timer); el.textContent = text; $("#letterSign").classList.add("show"); };
   const tick = () => {
-    if (i < text.length) { i++; el.innerHTML = text.slice(0, i).replace(/</g, "&lt;") + bar; timer = setTimeout(tick, 40); }
+    if (i < text.length) { i++; el.innerHTML = text.slice(0, i).replace(/</g, "&lt;") + bar; timer = setTimeout(tick, 22); }
     else finish();
   };
   el.onclick = () => { if (!done) finish(); };
@@ -290,7 +362,11 @@ function typeLetter() {
 }
 
 /* cake -> final */
+let surpriseStarted = false;
 $("#surpriseBtn").onclick = () => {
+  if (surpriseStarted) return;
+  surpriseStarted = true;
+  $("#surpriseBtn").disabled = true;
   $("#cakeBox").classList.add("out");
   show($("#glow"));
   setTimeout(startFinal, 3000);
@@ -299,6 +375,7 @@ function startFinal() {
   document.body.classList.add("locked");
   show($("#final"));
   const box = $("#finalHearts");
+  box.replaceChildren();
   for (let i = 0; i < 40; i++) {
     const h = document.createElement("i");
     h.textContent = "❤";
@@ -306,6 +383,15 @@ function startFinal() {
     box.appendChild(h);
   }
 }
+$("#finalBack").addEventListener("click", () => {
+  hide($("#final"));
+  document.body.classList.remove("locked");
+  surpriseStarted = false;
+  $("#surpriseBtn").disabled = false;
+  $("#cakeBox").classList.remove("out");
+  hide($("#glow"));
+  scrollTo({ top: 0, behavior: "smooth" });
+});
 
 /* ============ voice message + black stage + fireworks ============ */
 function initVoice() {
@@ -344,8 +430,12 @@ function initVoice() {
     const n = Math.round(p * BARS);
     bars.forEach((b, i) => b.classList.toggle("played", i < n));
   });
-  vo.addEventListener("error", () => { $("#voiceLabel").textContent = "ملف " + DATA.voice.src + " مش موجود"; stop(true); });
+  vo.addEventListener("error", () => {
+    $("#voiceSec").classList.add("hidden");
+    if (playing) stop(true);
+  }, { once: true });
   vo.addEventListener("ended", () => stop());
+  vo.load();
 
   /* fade volume of main song (never fully silent) */
   function fadeVol(to, ms) {
@@ -443,13 +533,14 @@ function initVoice() {
     if (ac && ac.state === "suspended") ac.resume();
     wasPlaying = !audio.paused;
     if (wasPlaying) fadeVol(DATA.voice.duck, 1500);     // اغنيه واطيه بس باينه
-    show(stage); resize();
+    show(stage); stage.setAttribute("aria-hidden", "false"); resize();
     ctx.clearRect(0, 0, W, H);
     void stage.offsetWidth; stage.classList.add("on");  // الشاشه تسود تدريجي
     document.body.classList.add("locked");
     vo.currentTime = 0;
     vo.play().catch(e => { console.error(e); stop(true); });
     btn.textContent = "❚❚";
+    btn.setAttribute("aria-pressed", "true");
     cancelAnimationFrame(raf); nextAuto = performance.now() + 2500;
     raf = requestAnimationFrame(frame);
   }
@@ -460,13 +551,45 @@ function initVoice() {
     stage.classList.remove("on");                       // كل حاجه ترجع زي م كانت
     if (wasPlaying) fadeVol(1, 2000); else audio.volume = 1;
     btn.textContent = "▶";
+    btn.setAttribute("aria-pressed", "false");
     setTimeout(() => {
       cancelAnimationFrame(raf); rockets.length = sparks.length = 0;
       hide(stage);
+      stage.setAttribute("aria-hidden", "true");
       if ($("#final").classList.contains("hidden")) document.body.classList.remove("locked");
     }, quick ? 100 : 2600);
   }
 
   btn.onclick = () => playing ? stop() : start();
   $("#stageClose").onclick = () => stop();
+}
+
+/* ============ places map (click photo = enlarge via memoryDialog) ============ */
+function initMap() {
+  const map = $("#mp"), P = DATA.places, card = $("#mpCard"), ph = $("#mpPh"), pins = [];
+  $("#mpRoute").setAttribute("points", P.map(p => p.x * 4 + "," + p.y * 5).join(" "));
+  const img = p => { const i = new Image(); i.src = p.image; i.alt = p.title; i.loading = "lazy"; i.onerror = () => { i.remove(); ph.disabled = true; }; return i; };
+  let cur = 0;
+  ph.addEventListener("click", () => { if (ph.querySelector("img")) openMemory({ image: P[cur].image, date: P[cur].title + " — " + P[cur].date }, false); });
+  function pick(i) {
+    cur = i;
+    pins.forEach((b, j) => b.classList.toggle("on", i === j));
+    card.classList.add("swap");
+    setTimeout(() => {
+      const p = P[i];
+      ph.disabled = false; ph.textContent = "❤"; ph.appendChild(img(p));
+      $("#mpDate").textContent = p.date; $("#mpTitle").textContent = p.title; $("#mpCap").textContent = p.caption;
+      card.classList.remove("swap");
+    }, 220);
+  }
+  P.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "mp-pin"; b.textContent = "❤"; b.setAttribute("aria-label", p.title);
+    b.style.left = p.x + "%"; b.style.top = p.y + "%";
+    b.appendChild(img(p)); b.onclick = () => pick(i);
+    const l = document.createElement("span");
+    l.className = "mp-label"; l.textContent = p.title; l.style.left = p.x + "%"; l.style.top = `calc(${p.y}% + 8px)`;
+    map.append(b, l); pins.push(b);
+  });
+  pick(0);
 }
