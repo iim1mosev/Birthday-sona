@@ -1,22 +1,26 @@
 <!doctype html>
-<html lang="ar" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Happy Birthday Hasonty 💓</title>
+  <meta name="theme-color" content="#fbf5ef" />
+  <meta name="description" content="الي اغلي م ليا : حسناء ❤ . " />
+  <title>الي اغلي م ليا : حسناء ❤ . </title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body class="locked">
+
+  <div id="scrollProgress" aria-hidden="true"><span id="scrollProgressFill"></span></div>
 
   <!-- Custom heart cursor -->
   <div id="cursor" aria-hidden="true">❤</div>
 
   <!-- Music player -->
-  <div id="player" class="hidden">
-    <button id="playBtn" aria-label="play / pause">▶</button>
+  <div id="player" class="hidden" role="group" aria-label="مشغل الأغنية">
+    <button id="playBtn" aria-label="تشغيل الأغنية" aria-pressed="false">▶</button>
     <div class="player-info">
       <div class="player-top"><span id="songTitle"></span><span id="songTime">00:00</span></div>
       <div class="bar"><div id="barFill"></div></div>
@@ -26,8 +30,9 @@
   <!-- 1) PIN entry -->
   <div id="entry" class="overlay">
     <div class="entry-box">
-      <div class="key-icon">♡</div>
-      <h2 id="entryTitle">Happy Birthday Hasonty</h2>
+      <div class="entry-seal" aria-hidden="true"><span>11</span><i>♡</i><span>10</span></div>
+      <p class="entry-kicker">Happy Birthday Hasonty</p>
+      <h2 id="entryTitle">كل سنة وانتي طيبة يحسونتي</h2>
       <p id="entrySub" class="small-caps"></p>
       <div class="card pin-card">
         <div id="unlockedCover" class="unlocked hidden">
@@ -37,9 +42,11 @@
         <div id="pinDots" class="pin-dots">
           <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
         </div>
-        <p class="hint">ركزي كده وهتعرفي الباسورد لوحدك</p>
+        <p class="pin-prompt">ركزي كده وهتعرفي الباسورد لوحدك</p>
+        <p id="pinFeedback" class="pin-feedback" aria-live="polite"></p>
         <div id="keypad" class="keypad"></div>
       </div>
+      <p class="entry-footnote">افتحيها على مهلك… دي ليكي إنتِ بس</p>
     </div>
   </div>
 
@@ -47,18 +54,20 @@
   <div id="intro" class="overlay hidden white">
     <div>
       <p id="introLine1" class="intro-1">كنت مستني اليوم ده بقالي كتير اوي</p>
-      <p id="introLine2" class="intro-2">كل سنه وانتي طيبه ي حسونتي</p>
+      <p id="introLine2" class="intro-2">كل سنه وانتي طيبه يحسونتيي</p>
+      <button id="skipIntro" class="skip-intro">ادخلي الحكاية على طول ↓</button>
     </div>
   </div>
 
   <!-- 3) Final reveal -->
   <div id="final" class="overlay hidden final-bg">
     <div class="final-content">
-      <p id="finalLine" class="final-small">في النهايه 💕 .</p>
+      <p id="finalLine" class="final-small">اشطر سونااا ❤ .</p>
       <div id="finalMain" class="final-main">
-        <h1 class="final-title">Happy Birthday,<br><span class="nameSlot"></span>.</h1>
-        <img src="gift.jpg" alt="Birthday Memory" class="final-img" />
+        <h1 class="final-title">كل سنة وانتي طيبة،<br><span class="nameSlot"></span> 🤍</h1>
+        <img src="gift.jpg" alt="ايلافيو حسونتي 💟" class="final-img" />
         <p id="finalDate" class="final-date"></p>
+        <button id="finalBack" class="final-back">عيدي م الاول 💗 .</button>
       </div>
     </div>
     <div id="finalHearts"></div>
@@ -72,49 +81,99 @@
     <div class="stage-center">
       <div class="st-heart">❤</div>
       <div class="eq"><i></i><i></i><i></i><i></i><i></i></div>
-      <p class="st-title">رساله ليكي يحسونتي</p>
+      <p class="st-title">رسالة صغيرة ليكي يا سونا</p>
       <p id="stTime" class="st-time">00:00</p>
       <div class="st-bar"><div id="stFill"></div></div>
     </div>
-    <button id="stageClose" class="stage-close" aria-label="close">✕</button>
+    <button id="stageClose" class="stage-close" aria-label="إغلاق الرسالة الصوتية">✕</button>
   </div>
 
   <!-- Main page -->
   <main id="main" class="hidden">
+    <header class="site-header">
+      <a class="brand-mark" href="#hero" aria-label="نبدأ بقا">S<span>♡</span></a>
+      <nav aria-label="IIM_mosev">
+        <a href="#story">قصتنا</a>
+        <a href="#reasons">حاجات بحبها فيكي</a>
+        <a href="#letterSec">رسالتي ليكي</a>
+      </nav>
+      <a class="header-date" href="#cakeSec"><span>11</span><i>·</i><span>10</span></a>
+    </header>
+
     <div class="blobs"><span></span><span></span><span></span></div>
 
     <!-- Hero -->
     <section id="hero">
       <div id="floatHearts"></div>
-      <canvas id="heartCanvas"></canvas>
       <div class="hero-text">
-        <h1 class="hero-title">Happy Birthday,<br><span class="nameSlot"></span></h1>
-        <p class="small-caps">انزلي تحت عشان تشوفي الباقي </p>
+        <div class="hero-copy">
+          <p class="hero-kicker"><span></span> الي اجمل شيء في حياتي</p>
+          <h1 class="hero-title">كل سنه وانتي طيبه<br><span class="hero-highlight">يحسونتيي</span></h1>
+          <p class="hero-note">كل صورة هنا وراها يوم حلو… وكل يوم حلو بيبدأ بوجودك.</p>
+          <div class="countdown" id="birthdayCountdown" aria-label="الوقت المتبقي لعيد الميلاد">
+            <p id="countdownLabel" class="countdown-label">بنعدّ الأيام لحد يومك</p>
+            <div class="countdown-units" aria-live="off">
+              <div><strong id="countDays">00</strong><span>يوم</span></div>
+              <i>:</i>
+              <div><strong id="countHours">00</strong><span>ساعة</span></div>
+              <i>:</i>
+              <div><strong id="countMinutes">00</strong><span>دقيقة</span></div>
+              <i>:</i>
+              <div><strong id="countSeconds">00</strong><span>ثانية</span></div>
+            </div>
+          </div>
+        </div>
+        <a class="scroll-cue" href="#story"><span>جاهزه يسونا </span><b aria-hidden="true">↓</b></a>
       </div>
     </section>
 
     <div class="content">
       <!-- Story -->
       <section id="story" class="wrap">
-        <h2 class="h2 big">نحكي قصتنا من الاول بقا</h2>
-        <p class="lead">كل لحظه عشناها مع بعض كانت حاجه مميزه ومقدرتش انساها</p>
+        <div class="section-heading">
+          <p class="section-kicker">ألبوم صغير من أيامنا</p>
+          <h2 class="h2 big">نحكي قصتنا<br><span>من الأول بقى</span></h2>
+          <p class="lead">كل لحظة عشناها سوا ليها مكان عندي… ودي شوية لحظات عمري ما نسيتها.</p>
+          <span id="memoryCount" class="memory-count"></span>
+        </div>
         <div id="memories" class="memories"></div>
+      </section>
+
+      <!-- Places map -->
+      <section id="places" class="section-glass mp-sec">
+        <div class="wrap narrow center">
+          <h2 class="h2">خريطتنا احنا الاتنين 🗺️</h2>
+          <p class="pill">دوسي علي كل مكان ❤ . دوسي ع الصوره هتكبر </p>
+          <div id="mp" class="mp">
+            <svg viewBox="0 0 400 500" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M-20 120 C 90 140, 120 260, 230 300 S 380 420, 430 470" fill="none" stroke="#ead4cc" stroke-width="46" stroke-linecap="round"/>
+              <g stroke="#f5e9e2" stroke-width="12" stroke-linecap="round" fill="none"><path d="M0 60H400"/><path d="M0 220H400"/><path d="M0 400H400"/><path d="M70 0V500"/><path d="M200 0V500"/><path d="M330 0V500"/></g>
+              <g fill="#f5e9e2" opacity=".75"><rect x="90" y="80" width="90" height="120" rx="14"/><rect x="220" y="80" width="90" height="120" rx="14"/><rect x="90" y="240" width="90" height="140" rx="14"/><rect x="345" y="240" width="45" height="140" rx="14"/><rect x="10" y="240" width="45" height="140" rx="14"/><rect x="220" y="420" width="90" height="70" rx="14"/></g>
+              <polyline id="mpRoute" class="mp-route" points=""/>
+            </svg>
+          </div>
+          <div id="mpCard" class="mp-card">
+            <button type="button" class="mp-ph" id="mpPh" aria-label="تكبير الصورة"></button>
+            <div><div class="mp-date" id="mpDate"></div><h3 class="mp-title" id="mpTitle"></h3><p class="mp-cap" id="mpCap"></p></div>
+          </div>
+        </div>
       </section>
 
       <!-- Reasons -->
       <section id="reasons" class="section-glass">
         <div class="wrap narrow center">
           <h2 class="h2">حاجات بحبها فيكي اوييي</h2>
-          <p class="pill">خربشي واحده واحده يسونا</p>
+          <p class="pill">خربشي واحدة واحدة يا سونا</p>
           <div id="reasonGrid" class="reason-grid"></div>
         </div>
       </section>
 
       <!-- Letter -->
       <section id="letterSec" class="letter-sec">
-        <h2 class="h2">رساله صغيره مني ليكي 🤍 .</h2>
-        <p class="small-caps" id="envHint">افتحيها لما تكوني لوحدك يبت انتي 😂🧡 .</p>
-        <div id="envelope" class="envelope" role="button" tabindex="0">
+        <p class="section-kicker">كلمتين مني ليكي يحسونتي</p>
+        <h2 class="h2">رسالة صغيرة مني ليكي 🤍</h2>
+        <p class="small-caps" id="envHint">افتحيها لما تكوني لوحدك يا بت إنتِ 😂🧡</p>
+        <div id="envelope" class="envelope" role="button" tabindex="0" aria-label="افتحي الرسالة">
           <div class="env-back"></div>
           <div class="env-paper"><i></i></div>
           <div class="env-flap"><span>❤</span></div>
@@ -132,10 +191,11 @@
 
       <!-- Voice message -->
       <section id="voiceSec" class="voice-sec">
-        <h2 class="h2">رساله ليكي يحسونتي 💌</h2>
-        <p class="small-caps"> اسمعيها وانتي لوحدك 🤍 .</p>
+        <p class="section-kicker">اسمعيها لوحدك 🤍 .</p>
+        <h2 class="h2">رسالة ليكي يا سونا 💌</h2>
+        <p class="small-caps">اسمعيها براحتك… دي ليكي إنتِ بس 😘</p>
         <div class="voice-card">
-          <button id="voiceBtn" class="voice-play" aria-label="play voice message">▶</button>
+          <button id="voiceBtn" class="voice-play" aria-label="تشغيل الرسالة الصوتية" aria-pressed="false">▶</button>
           <div class="voice-mid">
             <div id="voiceWave" class="wave"></div>
             <div class="voice-meta"><span id="voiceLabel">Voice Message</span><span id="voiceTime">00:00</span></div>
@@ -146,20 +206,28 @@
       <!-- Cake -->
       <section id="cakeSec" class="cake-sec">
         <div id="cakeBox" class="cake-box">
+          <p class="section-kicker">بس كده خلصنا يسونا</p>
           <div class="cake">
             <div class="drips"><i></i><i></i><i></i><i></i></div>
             <div class="layer-top"></div>
             <div class="layer-bottom"></div>
             <div class="candle"><div class="flame"></div></div>
           </div>
-          <h2 class="h2">كل سنه وانتي معايا ي حبيبه ايامي</h2>
-          <button id="surpriseBtn" class="btn">دوسي هنا</button>
+          <h2 class="h2">كل سنة وانتي منوّرة أيامي</h2>
+          <p class="cake-note">ايلافيو سونا طول العمر ❤ . </p>
+          <button id="surpriseBtn" class="btn">أطفِي الشمعة</button>
         </div>
         <div id="glow" class="glow hidden"></div>
       </section>
     </div>
   </main>
 
-  <script src="script.js"></script>
+  <dialog id="memoryDialog" aria-label="عرض ذكرى">
+    <form method="dialog"><button class="dialog-close" aria-label="إغلاق الصورة">×</button></form>
+    <div id="memoryDialogMedia"></div>
+    <p id="memoryDialogCaption"></p>
+  </dialog>
+
+  <script src="script.js?v=10"></script>
 </body>
 </html>
