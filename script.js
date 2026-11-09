@@ -1,7 +1,7 @@
 /* ============ DATA — عدّل هنا ============ */
 const DATA = {
   name: "SONA",
-  birthday: "NOVEMBER 11",
+  birthday: "NOVEMBER 10",
   relationshipStart: { year: 2025, month: 11, day: 5 },
   pin: "1011",
   places: [   // x,y = مكان القلب على الخريطه (0-100) | image = اسم الصوره
